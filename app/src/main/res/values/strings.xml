@@ -13,4 +13,6 @@
     <string name="submit">Submit</string>
     <string name="initialBTCPrice">%1$s%2$s</string>
     <string name="initialETHPrice">%1$s%2$s</string>
+    <string name="price_update_error">Unable to update prices.</string>
+    <string name="price_refresh_countdown">Refresh in %1$ds</string>
 </resources>

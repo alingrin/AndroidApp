@@ -3,4 +3,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="purple">#ff6750a4</color>
+    <color name="error_text">#FFB00020</color>
 </resources>

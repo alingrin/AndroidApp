@@ -31,17 +31,29 @@ class MainActivity : AppCompatActivity() {
     private var isBTCNameClicked = true
     private var lastBitcoinPrice = 0.0
     private var lastEthereumPrice = 0.0
+    private var secondsUntilRefresh = REFRESH_SECONDS
 
     private val runnable = object : Runnable {
         override fun run() {
+            startRefreshCountdown()
             fetchDataWithMyApiClient()
             handler.postDelayed(this, INTERVAL)
+        }
+    }
+
+    private val countdownRunnable = object : Runnable {
+        override fun run() {
+            secondsUntilRefresh = (secondsUntilRefresh - 1).coerceAtLeast(0)
+            updateRefreshCountdown()
+            handler.postDelayed(this, SECOND)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        updateRefreshCountdown()
+        selectButton(R.id.MonthButton)
         requestNotificationPermission()
         sharedPreferences = getPreferences(Context.MODE_PRIVATE)
         showCachedPrices()
@@ -49,7 +61,6 @@ class MainActivity : AppCompatActivity() {
         notificationService = PriceNotificationService(this)
         fetchDataForBitcoin(30, "daily")
         findViewById<ImageButton>(R.id.settingsButton).setOnClickListener { onSettingsButtonClick(it) }
-        fetchDataWithMyApiClient()
         handler.post(runnable)
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) Log.d(TAG, "FCM Registration Token: ${task.result}")
@@ -73,7 +84,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         handler.removeCallbacks(runnable)
+        handler.removeCallbacks(countdownRunnable)
         super.onDestroy()
+    }
+
+    private fun startRefreshCountdown() {
+        secondsUntilRefresh = REFRESH_SECONDS
+        updateRefreshCountdown()
+        handler.removeCallbacks(countdownRunnable)
+        handler.postDelayed(countdownRunnable, SECOND)
+    }
+
+    private fun updateRefreshCountdown() {
+        findViewById<TextView>(R.id.priceRefreshCountdown).text =
+            getString(R.string.price_refresh_countdown, secondsUntilRefresh)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -125,12 +149,21 @@ class MainActivity : AppCompatActivity() {
     fun fetchDataWithMyApiClient() {
         MyApiClient().fetchDataAsync(object : MyCallback {
             override fun onDataReceived(data: QuoteLatestResponseModel, code: Int) {
+                runOnUiThread { findViewById<TextView>(R.id.priceErrorText).visibility = View.GONE }
                 val bitcoin = data.data?.get("1") ?: return
                 val ethereum = data.data?.get("1027") ?: return
                 updateCoin(bitcoin, R.id.BitconPriceName, R.id.BTCPrice, R.id.BTC24PercentChange, "btc")
                 updateCoin(ethereum, R.id.EthPriceName, R.id.ETHPrice, R.id.ETH24PercentChange, "eth")
             }
-            override fun onFailure(t: Throwable) { Log.e(TAG, "Price request failed", t) }
+            override fun onFailure(t: Throwable) {
+                Log.e(TAG, "Price request failed", t)
+                runOnUiThread {
+                    findViewById<TextView>(R.id.priceErrorText).apply {
+                        text = t.message ?: getString(R.string.price_update_error)
+                        visibility = View.VISIBLE
+                    }
+                }
+            }
         })
     }
 
@@ -177,6 +210,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
-        private const val INTERVAL = 45_000L
+        private const val INTERVAL = 60_000L
+        private const val REFRESH_SECONDS = 60
+        private const val SECOND = 1_000L
     }
 }

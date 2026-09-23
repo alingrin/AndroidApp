@@ -20,8 +20,18 @@
         android:layout_marginBottom="10dp"
         android:text="24 Hours % change"
         app:layout_constraintBottom_toTopOf="@+id/BTC24PercentChange"
-        app:layout_constraintEnd_toEndOf="@+id/BTC24PercentChange"
+        app:layout_constraintEnd_toStartOf="@+id/priceRefreshCountdown"
         app:layout_constraintStart_toStartOf="@+id/BTC24PercentChange" />
+
+    <TextView
+        android:id="@+id/priceRefreshCountdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toTopOf="@+id/BTC24PercentChange"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/dayChangeTitle_textView2" />
 
     <TextView
         android:id="@+id/priceTitle_textView"
@@ -139,9 +149,24 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ETH24PercentChange"
+        app:layout_constraintTop_toBottomOf="@+id/priceErrorText"
         app:layout_constraintVertical_bias="0.118"
         tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/priceErrorText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:textColor="@color/error_text"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ETH24PercentChange" />
 
     <Button
         android:id="@+id/DayButton"
